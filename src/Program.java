@@ -57,7 +57,7 @@ class Program {
                     recursivelyInsert(value, bst.left);
                 }
             }
-            else if(value>bst.value){
+            else{
                 if(bst.right==null){
                     bst.right=new BST(value);
                 }
@@ -72,10 +72,29 @@ class Program {
             return searchRecursively(value, this);
         }
 
-        private void removeRecursively(int value, BST node){
-            if(node!=null&&node.left!=null&&value==node.left.value){
-                if(node.left.left!=null&&node.left.right!=null){
+        private BST getLeftMostNode(BST node){
+            while(node.left!=null){
+               return getLeftMostNode(node.left);
+            }
+            return node;
+        }
 
+        private BST getRightMostNode(BST node){
+            while(node.right!=null){
+                return getLeftMostNode(node.right);
+            }
+            return node;
+        }
+
+
+        private void removeRecursively(int value, BST node){
+
+             if(node!=null&&node.left!=null&&value==node.left.value){
+                if(node.left.left!=null&&node.left.right!=null){
+                    BST tempNode=getLeftMostNode(node.left.right);
+                    removeRecursively(tempNode.value, this);
+                    node.left=tempNode;
+                    return;
                 }
 
                else if(node.left.left==null&&node.left.right==null){
@@ -97,7 +116,10 @@ class Program {
             }
             else if(node!=null&&node.right!=null&&value==node.right.value){
                 if(node.right.left!=null&&node.right.right!=null){
-
+                    BST tempNode=getLeftMostNode(node.right.right);
+                    removeRecursively(tempNode.value, this);
+                    node.right=tempNode;
+                    return;
                 }
 
                 else if(node.right.left==null&&node.right.right==null){
@@ -120,6 +142,18 @@ class Program {
             else if(node==null){
                 return;
             }
+             else if(node.value==value&&node.right!=null){
+                 BST tempNode=getLeftMostNode(node.right);
+                 removeRecursively(tempNode.value, this);
+                 node.value=tempNode.value;
+                 return;
+             }
+             else if(node.value==value&&node.left!=null){
+                 BST tempNode=getRightMostNode(node.left);
+                 removeRecursively(tempNode.value, this);
+                 node.value=tempNode.value;
+                 return;
+             }
             if(value<node.value){
                 removeRecursively(value, node.left);
             }

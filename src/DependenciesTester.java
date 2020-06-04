@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -36,18 +37,19 @@ public class DependenciesTester {
         packagesMap.put("pkgB", Arrays.asList("dep1", "dep2"));
         packagesMap.put("pkgC", Arrays.asList("dep2", "dep3"));
         packagesMap.put("pkgD", Arrays.asList("dep1", "dep4"));
-        System.out.println(dependenciesMap);
-        System.out.println(packagesMap);
 
-        System.out.println(getPackagesUsingDependency(packagesMap, dependenciesMap, "dep6"));
+        System.out.println(getPackagesUsingDependency(packagesMap, dependenciesMap, "dep1"));
 
     }
 
 
     public static Set<String> getPackagesUsingDependency(Map<String, List<String>> packagesMap, Map<String, List<String>> dependenciesMap, String givenDependency){
-        Queue<String> queue=new NoDuplicateElemementsQueue();
+        Queue<String> queue=new LinkedList<>();
+        List<String> visitedNodes= new ArrayList<>();
         queue.add(givenDependency);
-        Set<String> dependenciesForGiven=solveDeepDependencies(queue, dependenciesMap, new LinkedHashSet<>());
+        visitedNodes.add(queue.peek());
+        List<String> dependenciesForGiven=solveWithGraphs(dependenciesMap, queue, visitedNodes, new ArrayList<>());
+        System.out.println(dependenciesForGiven);
         Set<String> finalResult= new LinkedHashSet<>();
         for(Map.Entry<String, List<String>> packagesEntry:packagesMap.entrySet()){
                    for(String dependency:dependenciesForGiven){
@@ -72,6 +74,21 @@ public class DependenciesTester {
                     }
                 });
             solveDeepDependencies(dependenciesQueue, dependenciesMap, result);
+        }
+
+        return result;
+    }
+
+    public static List<String> solveWithGraphs(Map<String, List<String>> dependenciesMap, Queue<String> breadFirstSearchQueue, List<String> visitedNodes, List<String> result){
+        while(!breadFirstSearchQueue.isEmpty()){
+            dependenciesMap.forEach((dependencyName, adjacentDependencies) -> {
+                if(adjacentDependencies.contains(breadFirstSearchQueue.peek())&&!visitedNodes.contains(dependencyName)){
+                        breadFirstSearchQueue.offer(dependencyName);
+                        visitedNodes.add(dependencyName);
+                }
+            });
+            result.add(breadFirstSearchQueue.poll());
+            solveWithGraphs(dependenciesMap, breadFirstSearchQueue, visitedNodes, result);
         }
 
         return result;
